@@ -1,0 +1,70 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Nights</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Start time</th>
+      <th>End time</th>
+
+	<th>Time from 5PM to bedtime (8PM, $12/hr)</th>
+	<th>Time from bed to midnight ($8/hr)</th>
+	<th>Time from midnight to 4am ($16/hr)</th>
+	<th>Charge</th>
+	<th>Hours</th>
+
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @nights.each do |night| %>
+
+	<% hours = (night.start_time.hour - night.end_time.hour).floor %>
+	<%	five_to_bed = 0
+		bed_to_midnight = 0
+		midnight_to_end = 0
+	%>
+	<% hours.times do |t|
+		if((night.start_time.hour + t) >= 17 && (night.start_time.hour + t) < 20)
+			five_to_bed+=1
+		elsif(night.start_time.hour + t >= 20 && night.start_time.hour + t < 24)
+                        bed_to_midnight+=1
+                elsif(night.start_time.hour + t < 4)
+                        midnight_to_end+=1
+                end
+	   end
+	%>
+      <tr>
+        <td><%= night.start_time.hour %></td>
+        <td><%= night.end_time.hour%></td>
+
+	<td><%= five_to_bed %></td>
+	<td><%= bed_to_midnight %></td>
+	<td><%= midnight_to_end %></td>
+	<td><%= five_to_bed*12 + bed_to_midnight*8 + midnight_to_end*16 %></td>
+	<td><%= hours %></td>
+
+
+        <td><%= link_to 'Show', night %></td>
+        <td><%= link_to 'Edit', edit_night_path(night) %></td>
+        <td><%= link_to 'Destroy', night, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Night', new_night_path %>
+
+<h1>Notes from Zach</h1>
+<p>&nbsp; My apologies for the very spare Kata app. The night I intended to work on it, I had a minor family emergency that threw me off my work rhythm. I figured that I would use this space to discuss my philosophy on full stack, MVC web development.</br></br>
+&nbsp; Having worked on internal web apps with enough user-facing data to potentially crash a browser, and doing fairly complex calculations, I've developed some paradigms on how to do development. Here are a few: <br>
+<ul>
+	<li><b>Load eagerly, calculate lazily</b>. Load data from model->controller->view eagerly within the safe limits of the program, which ensures fast and easy access when doing calculations. At the same time, calculate lazily, to avoid uncessary computation. This includes using minimal 'calculated columns' on databases, which in my experience, not only add load to the database, but also make migrations very difficult, since it enforces an ordering to the migration, which is very inconvenient. When there are calculated tables, and I am actually modifying the database (rare, only on once project), I store calculated values in their own separate table, so that on a migrated environment, it can be loaded alongside raw data migration, automatically.</li>
+	<li><b>Pass secure data from View->Controller->Model in as few steps as possible, handle normal security data as close to the front end as possible, inside the limits of user hardware</b>. When it comes to passwords and personally identifiable information (PII) I am careful to handle that as far away from the browser as possible. I have formal infosec coursework under my belt, but not enough to make a science out of security. Therefore, I always play as cautiously as possible. That being said, most of my employers prefer I take load off the servers by putting it into the browser. This serves to expedite development, such that I can just hand data through an API to the front end, to be calculated with JS frameworks in-browser, which is convenient, too.</li>
+	<li><b>Do it by the book, or not at all</b> Most of my work has involved interfacing directly with non-technical professionals, who have read just enough about web development to be dangerous. This lends itself to having unreasonable expectations of web technologies. The reality is, that any stack you use is going to reflexively lend itself to certain user interfaces, controller-database interfaces (ORM), and other patterns of design. Any time there is a requirement that deviates from what a stack's frameworks do reflexively, it will require either integrating a 3rd party or (God forbid) in-house framework, or putting an inordinate amount of time into finessing around the normal limitations of the technology. My advice? Don't do that. Accept reasonable limitations to the existing technology, and just bear them in mind when you change platforms, say every six-ish years. In my experience, it's not worth obsessing over UI details to distract from substantial improvements. If the special feature you absolutely need somehow doesn't fit in the existing tech (which would be weird in mainstream MVC stacks), at least pick your battles about investing in those key, unsupported features.
+
+</li>
